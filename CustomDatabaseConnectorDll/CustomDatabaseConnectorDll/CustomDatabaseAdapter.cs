@@ -14,6 +14,12 @@ namespace CustomDatabaseConnectorDll
             return false;
         }
 
+        public bool CreateTable(object obj, out string errorMessage)
+        {
+            errorMessage = null;
+            return false;
+        }
+
         public string GetConnectionString()
         {
             return null;

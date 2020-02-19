@@ -9,8 +9,6 @@ namespace CustomDatabaseConnectorDll.Interface
 {
     internal interface IDatabase
     {
-        void Init();
-        void SetConnectionString(string connectionstring);
         string GetConnectionString();
         bool InsertQuery(object obj, out int newRecordId, out string errorMessage);
         bool InsertQuery(object obj, out string errorMessage);
