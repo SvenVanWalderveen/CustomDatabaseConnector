@@ -1,4 +1,5 @@
 ﻿using CustomDatabaseConnectorDll.Interface;
+using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -10,14 +11,35 @@ namespace CustomDatabaseConnectorDll.Database
 {
     internal class MySqlDatabase : IDatabase
     {
+        public bool CreateTable(object obj, out string errorMessage)
+        {
+            MySqlQueryBuilder builder = new MySqlQueryBuilder();
+            string sql = builder.BuildCreateTable(obj.GetType());
+            return ExecuteSql(sql, out errorMessage);
+        }
+
         public bool DeleteQuery(object obj, out string errorMessage)
         {
             throw new NotImplementedException();
         }
 
-        public bool ExecuteSql(string sqlStatement)
+        public bool ExecuteSql(string sqlStatement, out string errorMessage)
         {
-            throw new NotImplementedException();
+            errorMessage = null;
+            try
+            {
+                MySqlConnection con = new MySqlConnection(GetConnectionString());
+                con.Open();
+                MySqlCommand cmd = new MySqlCommand(sqlStatement, con);
+                cmd.ExecuteNonQuery();
+                con.Close();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message;
+                return false;
+            }
         }
 
         public string GetConnectionString()

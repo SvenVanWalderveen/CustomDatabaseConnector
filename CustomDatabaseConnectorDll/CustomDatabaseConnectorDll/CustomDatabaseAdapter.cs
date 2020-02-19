@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CustomDatabaseConnectorDll.Controller;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -11,13 +12,18 @@ namespace CustomDatabaseConnectorDll
     {
         public bool Init(string connectionString)
         {
-            return false;
+            if(string.IsNullOrEmpty(connectionString))
+            {
+                return false;
+            }
+            CacheClass.ConnectionString = connectionString;
+            CacheClass.Environment = 1;
+            return true;
         }
 
         public bool CreateTable(object obj, out string errorMessage)
         {
-            errorMessage = null;
-            return false;
+            return DatabaseController.Instance.CreateTable(obj, out errorMessage);
         }
 
         public string GetConnectionString()
