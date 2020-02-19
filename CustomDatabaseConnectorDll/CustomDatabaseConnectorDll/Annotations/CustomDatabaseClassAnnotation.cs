@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CustomDatabaseConnectorDll.Annotations
 {
-    public class CustomDatabaseClassAnnotation : Attribute
+    internal class CustomDatabaseClassAnnotation : Attribute
     {
         private string tableName;
 

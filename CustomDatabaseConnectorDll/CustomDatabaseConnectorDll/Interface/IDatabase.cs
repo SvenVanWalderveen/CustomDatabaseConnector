@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CustomDatabaseConnectorDll.Interface
 {
-    public interface IDatabase
+    internal interface IDatabase
     {
         void Init();
         void SetConnectionString(string connectionstring);
