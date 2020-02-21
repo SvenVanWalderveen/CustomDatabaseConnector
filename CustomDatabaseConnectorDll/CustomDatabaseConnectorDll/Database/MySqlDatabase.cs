@@ -44,7 +44,7 @@ namespace CustomDatabaseConnectorDll.Database
 
         public string GetConnectionString()
         {
-            throw new NotImplementedException();
+            return CacheClass.ConnectionString;
         }
 
         public bool InsertQuery(object obj, out int newRecordId, out string errorMessage)

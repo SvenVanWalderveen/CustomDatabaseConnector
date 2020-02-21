@@ -22,6 +22,14 @@ namespace TestConsole
     [CustomDatabaseClassAnnotation(TableName = "TESTTABLE")]
     public class TestTable
     {
-
+        [CustomDatabaseColumnAnnotation(ColumnName = "ID", IsPrimaryKey = true, IsAutoIncrement = true)]
+        public int Id { get; set; }
+        
+    }   
+    [CustomDatabaseClassAnnotation(TableName = "TESTTABLE1")]
+    public class TestTable1
+    {
+        [CustomDatabaseColumnAnnotation(ColumnName = "ID", IsPrimaryKey = true, IsAutoIncrement = true)]
+        public int Id { get; set; }
     }
 }
