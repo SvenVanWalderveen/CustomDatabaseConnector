@@ -40,8 +40,7 @@ namespace CustomDatabaseConnectorDll
         }
         public bool DeleteQuery(object obj, out string errorMessage)
         {
-            errorMessage = null;
-            return false;
+            return DatabaseController.Instance.DeleteQuery(obj, out errorMessage);
         }
         public DataTable SelectQuery(Type classType)
         {

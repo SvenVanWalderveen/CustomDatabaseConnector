@@ -20,7 +20,21 @@ namespace CustomDatabaseConnectorDll.Database
 
         public bool DeleteQuery(object obj, out string errorMessage)
         {
-            throw new NotImplementedException();
+            errorMessage = null;
+            try
+            {
+                string query = new MySqlQueryBuilder().BuildDeleteRow(obj, out errorMessage);
+                if (string.IsNullOrEmpty(query))
+                {
+                    return false;
+                }
+                return ExecuteSql(query, out errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message;
+                return false;
+            }
         }
 
         public bool ExecuteSql(string sqlStatement, out string errorMessage)

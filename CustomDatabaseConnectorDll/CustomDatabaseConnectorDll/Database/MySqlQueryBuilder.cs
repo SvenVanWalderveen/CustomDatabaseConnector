@@ -42,6 +42,47 @@ namespace CustomDatabaseConnectorDll.Database
             }
         }
 
+        public string BuildDeleteRow(object obj, out string errorMessage)
+        {
+            errorMessage = null;
+            string queryFormat = "DELETE FROM {0} WHERE {1}";
+            string tableName = GetTableName(obj);
+            string whereClause = null;
+            var dbColumns = GetDbProperties(obj.GetType());
+
+            foreach (var dbProperty in dbColumns)
+            {
+                string propName = dbProperty.Name;
+                CustomDatabaseColumnAnnotation attr = (CustomDatabaseColumnAnnotation)dbProperty.GetCustomAttribute(typeof(CustomDatabaseColumnAnnotation));
+                if (attr.IsPrimaryKey)
+                {
+                    string dbValue = ConvertValueToDbValue(dbProperty, obj.GetType().GetProperty(propName).GetValue(obj, null));
+                    if (string.IsNullOrEmpty(whereClause))
+                    {
+                        whereClause = string.Format("{0} = {1}", attr.ColumnName, dbValue);
+                    }
+                    else
+                    {
+                        whereClause += string.Format("AND {0} = {1}", attr.ColumnName, dbValue);
+                    }
+                }
+            }
+
+            if (string.IsNullOrEmpty(tableName))
+            {
+                errorMessage = "Tabelnaam is leeg";
+                return null;
+            }
+            if (string.IsNullOrEmpty(whereClause))
+            {
+                errorMessage = "Where-clause is leeg";
+                return null;
+            }
+
+            string query = string.Format(queryFormat, tableName, whereClause);
+            return query;
+        }
+
         public string BuildInsertRow(object obj, out string errorMessage)
         {
             errorMessage = null;
