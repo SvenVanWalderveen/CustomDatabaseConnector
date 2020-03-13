@@ -25,6 +25,7 @@ namespace CustomDatabaseConnectorDll.Annotations
         private Type fkTable;
         private bool isNullable;
         private int maxLength;
+        private bool updatable;
         public virtual bool IsAutoIncrement
         {
             get { return isAutoIncrement; }
@@ -49,6 +50,11 @@ namespace CustomDatabaseConnectorDll.Annotations
         {
             get { return isNullable; }
             set { isNullable = value; }
+        }
+        public virtual bool IsUpdatable
+        {
+            get { return updatable; }
+            set { updatable = value; }
         }
 
         public virtual int MaxLength

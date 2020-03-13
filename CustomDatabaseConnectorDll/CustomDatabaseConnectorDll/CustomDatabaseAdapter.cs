@@ -26,25 +26,17 @@ namespace CustomDatabaseConnectorDll
             return DatabaseController.Instance.CreateTable(obj, out errorMessage);
         }
 
-        public string GetConnectionString()
-        {
-            return null;
-        }
         public bool InsertQuery(object obj, out int newRecordId, out string errorMessage)
         {
-            newRecordId = 0;
-            errorMessage = null;
-            return false;
+            return DatabaseController.Instance.InsertQuery(obj, out newRecordId, out errorMessage);
         }
         public bool InsertQuery(object obj, out string errorMessage)
         {
-            errorMessage = null;
-            return false;
+            return DatabaseController.Instance.InsertQuery(obj, out errorMessage);
         }
         public bool UpdateQuery(object obj, out string errorMessage)
         {
-            errorMessage = null;
-            return false;
+            return DatabaseController.Instance.UpdateQuery(obj, out errorMessage);
         }
         public bool DeleteQuery(object obj, out string errorMessage)
         {

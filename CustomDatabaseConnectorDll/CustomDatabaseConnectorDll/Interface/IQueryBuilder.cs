@@ -14,7 +14,7 @@ namespace CustomDatabaseConnectorDll.Interface
         string GetTableName(object obj);
         string GetTableName(Type typeOfObject);
         List<PropertyInfo> GetDbProperties(Type objectType);
-        string ConvertClassAttributeToSqlCreate(PropertyInfo propertyInfo, CustomDatabaseColumnAnnotation annotation, out string errorMessage);
+        List<string> ConvertClassAttributeToSqlCreate(PropertyInfo propertyInfo, CustomDatabaseColumnAnnotation annotation, out string errorMessage);
         string GetPrimaryKey(Type type);
         string GetSqlDataTypeByNetField(PropertyInfo propertyInfo, int maxLength, out string errorMessage);
 

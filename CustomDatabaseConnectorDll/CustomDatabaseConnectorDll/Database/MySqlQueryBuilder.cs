@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace CustomDatabaseConnectorDll.Database
 {
-    internal class MySqlQueryBuilder : IQueryBuilder
+    internal class MySqlQueryBuilder
     {
         public static List<string> errorMessages = new List<string>();
         public string BuildCreateTable(Type objectType)
@@ -22,7 +22,11 @@ namespace CustomDatabaseConnectorDll.Database
             {
                 string errorMessage = null;
                 CustomDatabaseColumnAnnotation attr = (CustomDatabaseColumnAnnotation)dbProperty.GetCustomAttribute(typeof(CustomDatabaseColumnAnnotation));
-                columns.Add(ConvertClassAttributeToSqlCreate(dbProperty, attr, out errorMessage));
+                List<string> columns1 = ConvertClassAttributeToSqlCreate(dbProperty, attr, out errorMessage);
+                if(columns1 != null)
+                {
+                    columns.AddRange(columns1);
+                }
                 if (!string.IsNullOrEmpty(errorMessage))
                 {
                     errorMessages.Add(errorMessage);
@@ -38,7 +42,60 @@ namespace CustomDatabaseConnectorDll.Database
             }
         }
 
-        public string ConvertClassAttributeToSqlCreate(PropertyInfo propertyInfo, CustomDatabaseColumnAnnotation annotation, out string errorMessage)
+        public string BuildInsertRow(object obj, out string errorMessage)
+        {
+            errorMessage = null;
+            List<string> columns = new List<string>();
+            string queryFormat = "INSERT INTO {0} ({1}) VALUES ({2})";
+            string tableName = GetTableName(obj.GetType());
+            var dbColumns = GetDbProperties(obj.GetType());
+            
+            List<string> columnValues = new List<string>();
+
+            foreach (var dbProperty in dbColumns)
+            {
+                string propName = dbProperty.Name;
+                CustomDatabaseColumnAnnotation attr = (CustomDatabaseColumnAnnotation)dbProperty.GetCustomAttribute(typeof(CustomDatabaseColumnAnnotation));
+                if (attr == null)
+                {
+                    continue;
+                }
+                if (!(attr.IsPrimaryKey && attr.IsAutoIncrement))
+                {
+                    //Add column to list
+                    columns.Add(attr.ColumnName);
+                    //Add value to list
+                    object propValue = obj.GetType().GetProperty(propName).GetValue(obj, null);
+                    string dbValue = ConvertValueToDbValue(dbProperty, propValue);
+                    if(CheckColumnDbValue(dbProperty, attr, dbValue))
+                    {
+                        columnValues.Add(dbValue);
+                    }
+                    else
+                    {
+                        errorMessage = "Veld " + propName + " niet gevuld";
+                        return null;
+                    }
+                }
+            }
+            string query = string.Format(queryFormat, tableName, string.Join(",", columns), string.Join(",", columnValues));
+            return query;
+        }
+
+
+        public bool CheckColumnDbValue(PropertyInfo pi, CustomDatabaseColumnAnnotation annotation, string dbValue)
+        {
+            if(annotation.IsUpdatable && !annotation.IsNullable)
+            {
+                if(dbValue.Equals("null"))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public List<string> ConvertClassAttributeToSqlCreate(PropertyInfo propertyInfo, CustomDatabaseColumnAnnotation annotation, out string errorMessage)
         {
             errorMessage = null;
             if(string.IsNullOrEmpty(annotation.ColumnName))
@@ -53,11 +110,11 @@ namespace CustomDatabaseConnectorDll.Database
                 //Autoincrement field
                 if (annotation.IsPrimaryKey)
                 {
-                    return string.Format("{0} INT NOT NULL AUTO_INCREMENT PRIMARY KEY", annotation.ColumnName);
+                    return new List<string> { string.Format("{0} INT NOT NULL AUTO_INCREMENT PRIMARY KEY", annotation.ColumnName) };
                 }
                 else
                 {
-                    return string.Format("{0} INT NOT NULL AUTO_INCREMENT", annotation.ColumnName);
+                    return new List<string> { string.Format("{0} INT NOT NULL AUTO_INCREMENT", annotation.ColumnName) };
                 }
             }
             else
@@ -76,8 +133,12 @@ namespace CustomDatabaseConnectorDll.Database
                     string columName = GetPrimaryKey(annotation.ForeignKeyTable);
                     if (!string.IsNullOrEmpty(tableName) && !string.IsNullOrEmpty(columName))
                     {
-                        string fkFormat = "REFERENCES {0}({1})";
-                        return string.Format(format, annotation.ColumnName, dataType, string.Format(fkFormat, tableName, columName));
+                        List<string> array = new List<string>();
+                        string nullableType = annotation.IsNullable ? "NULL" : "NOT NULL";
+                        array.Add(string.Format(format, annotation.ColumnName, dataType, nullableType));
+                        string fkFormat = "FOREIGN KEY ({0})REFERENCES {1}({2}) ON UPDATE RESTRICT ON DELETE CASCADE";
+                        array.Add(string.Format(fkFormat, annotation.ColumnName, tableName, columName));
+                        return array;
                     }
                     else
                     {
@@ -88,11 +149,94 @@ namespace CustomDatabaseConnectorDll.Database
                 else
                 {
                     string nullableType = annotation.IsNullable ? "NULL" : "NOT NULL";
-                    return string.Format(format, annotation.ColumnName, dataType, nullableType);
+                    return new List<string> { string.Format(format, annotation.ColumnName, dataType, nullableType) };
                 }
             }
             return null;
         }
+
+        public string BuildUpdateRow(object obj, out string errorMessage)
+        {
+            errorMessage = null;
+            string queryFormat = "UPDATE {0} SET {1} WHERE {2}";
+            string tableName = GetTableName(obj);
+            var dbColumns = GetDbProperties(obj.GetType());
+            string whereClause = "";
+            string setClause = "";
+
+            foreach(var dbProperty in dbColumns)
+            {
+                string propName = dbProperty.Name;
+                CustomDatabaseColumnAnnotation attr = (CustomDatabaseColumnAnnotation)dbProperty.GetCustomAttribute(typeof(CustomDatabaseColumnAnnotation));
+                if (attr.IsPrimaryKey)
+                {
+                    string dbValue = ConvertValueToDbValue(dbProperty, obj.GetType().GetProperty(propName).GetValue(obj, null));
+                    if (string.IsNullOrEmpty(whereClause))
+                    {
+                        whereClause = string.Format("{0} = {1}", attr.ColumnName, dbValue);
+                    }
+                    else
+                    {
+                        whereClause += string.Format("AND {0} = {1}", attr.ColumnName, dbValue);
+                    }
+                }
+                if (attr.IsUpdatable)
+                {
+                    string dbValue = ConvertValueToDbValue(dbProperty, obj.GetType().GetProperty(propName).GetValue(obj, null));
+                    if (string.IsNullOrEmpty(setClause))
+                    {
+                        setClause = string.Format("{0} = {1}", attr.ColumnName, dbValue);
+                    }
+                    else
+                    {
+                        setClause += string.Format(",{0} = {1}", attr.ColumnName, dbValue);
+                    }
+                }
+            }
+
+            if(string.IsNullOrEmpty(tableName))
+            {
+                errorMessage = "Tabelnaam is leeg";
+                return null;
+            }
+            if(string.IsNullOrEmpty(setClause))
+            {
+                errorMessage = "Set-clause is leeg";
+                return null;
+            }
+            if(string.IsNullOrEmpty(whereClause))
+            {
+                errorMessage = "Where-clause is leeg";
+                return null;
+            }
+            string query = string.Format(queryFormat, tableName, setClause, whereClause);
+            return query;
+        }
+
+        public string ConvertValueToDbValue(PropertyInfo info, object value)
+        {
+            if (info.PropertyType == typeof(string))
+            {
+                if (value != null)
+                {
+                    return string.Format("'{0}'", value.ToString());
+                }
+                else
+                {
+                    return "null";
+                }
+            }
+            else if (info.PropertyType == typeof(DateTime))
+            {
+
+                return string.Format("'{0}'", DateTime.Parse(value.ToString()).ToString("yyyy-MM-dd HH:mm:ss"));
+            }
+            else
+            {
+                return value.ToString();
+            }
+        }
+
 
         public List<PropertyInfo> GetDbProperties(Type objectType)
         {

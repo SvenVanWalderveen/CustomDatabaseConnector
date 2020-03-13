@@ -49,12 +49,45 @@ namespace CustomDatabaseConnectorDll.Database
 
         public bool InsertQuery(object obj, out int newRecordId, out string errorMessage)
         {
-            throw new NotImplementedException();
+            errorMessage = null;
+            newRecordId = 0;
+            try
+            {
+                string query = new MySqlQueryBuilder().BuildInsertRow(obj, out errorMessage);
+                MySqlConnection con = new MySqlConnection(GetConnectionString());
+                con.Open();
+                MySqlCommand cmd = new MySqlCommand(query, con);
+                cmd.ExecuteNonQuery();
+                newRecordId = Convert.ToInt32(cmd.LastInsertedId);
+                con.Close();
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message;
+                return false;
+            }
         }
 
         public bool InsertQuery(object obj, out string errorMessage)
         {
-            throw new NotImplementedException();
+            errorMessage = null;
+
+            try
+            {
+                string query = new MySqlQueryBuilder().BuildInsertRow(obj, out errorMessage);
+                if(string.IsNullOrEmpty(query))
+                {
+                    return false;
+                }
+                return ExecuteSql(query, out errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message;
+                return false;
+            }
         }
 
         public DataTable SelectQuery(Type classType)
@@ -69,7 +102,21 @@ namespace CustomDatabaseConnectorDll.Database
 
         public bool UpdateQuery(object obj, out string errorMessage)
         {
-            throw new NotImplementedException();
+            errorMessage = null;
+            try
+            {
+                string query = new MySqlQueryBuilder().BuildUpdateRow(obj, out errorMessage);
+                if (string.IsNullOrEmpty(query))
+                {
+                    return false;
+                }
+                return ExecuteSql(query, out errorMessage);
+            }
+            catch (Exception ex)
+            {
+                errorMessage = ex.Message;
+                return false;
+            }
         }
     }
 }
