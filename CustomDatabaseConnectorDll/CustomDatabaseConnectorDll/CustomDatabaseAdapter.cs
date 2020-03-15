@@ -23,23 +23,49 @@ namespace CustomDatabaseConnectorDll
 
         public bool CreateTable(Type objectType, out string errorMessage)
         {
+            if(DatabaseController.Instance == null)
+            {
+                errorMessage = "Geen database geïnitialiseerd";
+                return false;
+            }
             return DatabaseController.Instance.CreateTable(objectType, out errorMessage);
         }
 
         public bool InsertQuery(object obj, out int newRecordId, out string errorMessage)
         {
+            if (DatabaseController.Instance == null)
+            {
+                newRecordId = 0;
+                errorMessage = "Geen database geïnitialiseerd";
+                return false;
+            }
             return DatabaseController.Instance.InsertQuery(obj, out newRecordId, out errorMessage);
         }
         public bool InsertQuery(object obj, out string errorMessage)
         {
+            if (DatabaseController.Instance == null)
+            {
+                errorMessage = "Geen database geïnitialiseerd";
+                return false;
+            }
             return DatabaseController.Instance.InsertQuery(obj, out errorMessage);
         }
         public bool UpdateQuery(object obj, out string errorMessage)
         {
+            if (DatabaseController.Instance == null)
+            {
+                errorMessage = "Geen database geïnitialiseerd";
+                return false;
+            }
             return DatabaseController.Instance.UpdateQuery(obj, out errorMessage);
         }
         public bool DeleteQuery(object obj, out string errorMessage)
         {
+            if (DatabaseController.Instance == null)
+            {
+                errorMessage = "Geen database geïnitialiseerd";
+                return false;
+            }
             return DatabaseController.Instance.DeleteQuery(obj, out errorMessage);
         }
         public DataTable SelectQuery(Type classType)
