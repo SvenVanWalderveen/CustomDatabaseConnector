@@ -31,6 +31,27 @@ namespace CustomDatabaseConnectorDll
             return DatabaseController.Instance.CreateTable(objectType, out errorMessage);
         }
 
+        public bool CreateTables(Dictionary<int, Type> objectTypes, out string errorMessage, out int typesCompleted)
+        {
+            errorMessage = null;
+            typesCompleted = 0;
+            if(objectTypes == null || objectTypes.Count == 0)
+            {
+                errorMessage = "Geen objecttypes meegegeven";
+                return false;
+            }
+            foreach(var objectType in objectTypes.OrderBy(x => x.Key))
+            {
+                bool result = CreateTable(objectType.Value, out errorMessage);
+                if(!result)
+                {
+                    break;
+                }
+                typesCompleted++;
+            }
+            return true;
+        }
+
         public bool InsertQuery(object obj, out int newRecordId, out string errorMessage)
         {
             if (DatabaseController.Instance == null)
