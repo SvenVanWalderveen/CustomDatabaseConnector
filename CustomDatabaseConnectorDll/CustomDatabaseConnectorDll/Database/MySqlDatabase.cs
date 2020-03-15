@@ -14,7 +14,11 @@ namespace CustomDatabaseConnectorDll.Database
         public bool CreateTable(Type objectType, out string errorMessage)
         {
             MySqlQueryBuilder builder = new MySqlQueryBuilder();
-            string sql = builder.BuildCreateTable(objectType);
+            string sql = builder.BuildCreateTable(objectType, out errorMessage);
+            if (string.IsNullOrEmpty(sql))
+            {
+                return false;
+            }
             return ExecuteSql(sql, out errorMessage);
         }
 

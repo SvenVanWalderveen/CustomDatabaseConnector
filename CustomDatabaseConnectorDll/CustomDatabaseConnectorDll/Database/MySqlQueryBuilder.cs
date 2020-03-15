@@ -11,33 +11,30 @@ namespace CustomDatabaseConnectorDll.Database
 {
     internal class MySqlQueryBuilder
     {
-        public static List<string> errorMessages = new List<string>();
-        public string BuildCreateTable(Type objectType)
+        public string BuildCreateTable(Type objectType, out string errorMessage)
         {
+            errorMessage = null;
             List<string> columns = new List<string>();
             string queryFormat = "CREATE TABLE IF NOT EXISTS {0} ({1})";
             string tableName = GetTableName(objectType);
             var dbColumns = GetDbProperties(objectType);
             foreach(var dbProperty in dbColumns)
             {
-                string errorMessage = null;
                 CustomDatabaseColumnAnnotation attr = (CustomDatabaseColumnAnnotation)dbProperty.GetCustomAttribute(typeof(CustomDatabaseColumnAnnotation));
                 List<string> columns1 = ConvertClassAttributeToSqlCreate(dbProperty, attr, out errorMessage);
                 if(columns1 != null)
                 {
                     columns.AddRange(columns1);
                 }
-                if (!string.IsNullOrEmpty(errorMessage))
-                {
-                    errorMessages.Add(errorMessage);
-                }
             }
-            if (errorMessages.Count == 0 && !string.IsNullOrEmpty(tableName))
+            if (string.IsNullOrEmpty(errorMessage) && !string.IsNullOrEmpty(tableName))
             {
+                errorMessage = null;
                 return string.Format(queryFormat, tableName, string.Join(",", columns));
             }
             else
             {
+                errorMessage = "Geen klasse-annotatie bekend";
                 return null;
             }
         }
@@ -329,9 +326,13 @@ namespace CustomDatabaseConnectorDll.Database
             string dataType = null;
             if (propertyType == typeof(string))
             {
-                if (maxLength < 256)
+                if(maxLength <= 0)
                 {
                     dataType = "VARCHAR(255)";
+                }
+                else if (maxLength < 256)
+                {
+                    dataType = string.Format("VARCHAR({0})", maxLength);
                 }
                 else
                 {
