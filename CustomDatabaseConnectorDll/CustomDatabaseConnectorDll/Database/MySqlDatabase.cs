@@ -41,6 +41,17 @@ namespace CustomDatabaseConnectorDll.Database
             }
         }
 
+        public bool DropTable(Type objectType, out string errorMessage)
+        {
+            MySqlQueryBuilder builder = new MySqlQueryBuilder();
+            string sql = builder.BuildDropTable(objectType, out errorMessage);
+            if (string.IsNullOrEmpty(sql))
+            {
+                return false;
+            }
+            return ExecuteSql(sql, out errorMessage);
+        }
+
         public bool ExecuteSql(string sqlStatement, out string errorMessage)
         {
             errorMessage = null;

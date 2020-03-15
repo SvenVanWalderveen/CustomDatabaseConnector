@@ -52,6 +52,37 @@ namespace CustomDatabaseConnectorDll
             return true;
         }
 
+        public bool DropTable(Type objectType, out string errorMessage)
+        {
+            if (DatabaseController.Instance == null)
+            {
+                errorMessage = "Geen database geïnitialiseerd";
+                return false;
+            }
+            return DatabaseController.Instance.DropTable(objectType, out errorMessage);
+        }
+
+        public bool DropTables(Dictionary<int, Type> objectTypes, out string errorMessage, out int typesCompleted)
+        {
+            errorMessage = null;
+            typesCompleted = 0;
+            if (objectTypes == null || objectTypes.Count == 0)
+            {
+                errorMessage = "Geen objecttypes meegegeven";
+                return false;
+            }
+            foreach (var objectType in objectTypes.OrderByDescending(x => x.Key))
+            {
+                bool result = DropTable(objectType.Value, out errorMessage);
+                if (!result)
+                {
+                    break;
+                }
+                typesCompleted++;
+            }
+            return true;
+        }
+
         public bool InsertQuery(object obj, out int newRecordId, out string errorMessage)
         {
             if (DatabaseController.Instance == null)

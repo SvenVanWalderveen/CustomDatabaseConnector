@@ -39,6 +39,19 @@ namespace CustomDatabaseConnectorDll.Database
             }
         }
 
+        public string BuildDropTable(Type objectType, out string errorMessage)
+        {
+            errorMessage = null;
+            string queryFormat = "DROP TABLE IF EXISTS {0}";
+            var tableName = GetTableName(objectType);
+            if(string.IsNullOrEmpty(tableName))
+            {
+                errorMessage = "Geen tabelnaam bekend";
+                return null;
+            }
+            return string.Format(queryFormat, tableName);
+        }
+
         public string BuildDeleteRow(object obj, out string errorMessage)
         {
             errorMessage = null;

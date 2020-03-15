@@ -18,5 +18,6 @@ namespace CustomDatabaseConnectorDll.Interface
         DataTable SelectQuery(Type classType, string whereFilter);
         bool ExecuteSql(string sqlStatement, out string errorMessage);
         bool CreateTable(Type objectType, out string errorMessage);
+        bool DropTable(Type objectType, out string errorMessage);
     }
 }
