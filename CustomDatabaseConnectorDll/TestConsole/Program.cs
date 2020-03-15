@@ -13,6 +13,7 @@ namespace TestConsole
         {
             CustomDatabaseConnectorDll.CustomDatabaseAdapter adapter = new CustomDatabaseConnectorDll.CustomDatabaseAdapter();
             adapter.Init("server=ID146926_sven.db.webhosting.be;user id=ID146926_sven;database=ID146926_sven;password=93!Ftg105;persistsecurityinfo=True");
+       
         }
         
     }

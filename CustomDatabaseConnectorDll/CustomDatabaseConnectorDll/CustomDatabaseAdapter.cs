@@ -21,9 +21,9 @@ namespace CustomDatabaseConnectorDll
             return true;
         }
 
-        public bool CreateTable(object obj, out string errorMessage)
+        public bool CreateTable(Type objectType, out string errorMessage)
         {
-            return DatabaseController.Instance.CreateTable(obj, out errorMessage);
+            return DatabaseController.Instance.CreateTable(objectType, out errorMessage);
         }
 
         public bool InsertQuery(object obj, out int newRecordId, out string errorMessage)

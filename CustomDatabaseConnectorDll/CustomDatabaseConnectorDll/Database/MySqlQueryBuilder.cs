@@ -119,6 +119,11 @@ namespace CustomDatabaseConnectorDll.Database
                     }
                 }
             }
+            if (string.IsNullOrEmpty(tableName))
+            {
+                errorMessage = "Tabelnaam is leeg";
+                return null;
+            }
             string query = string.Format(queryFormat, tableName, string.Join(",", columns), string.Join(",", columnValues));
             return query;
         }

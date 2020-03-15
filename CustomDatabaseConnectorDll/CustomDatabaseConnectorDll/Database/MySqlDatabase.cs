@@ -11,10 +11,10 @@ namespace CustomDatabaseConnectorDll.Database
 {
     internal class MySqlDatabase : IDatabase
     {
-        public bool CreateTable(object obj, out string errorMessage)
+        public bool CreateTable(Type objectType, out string errorMessage)
         {
             MySqlQueryBuilder builder = new MySqlQueryBuilder();
-            string sql = builder.BuildCreateTable(obj.GetType());
+            string sql = builder.BuildCreateTable(objectType);
             return ExecuteSql(sql, out errorMessage);
         }
 
