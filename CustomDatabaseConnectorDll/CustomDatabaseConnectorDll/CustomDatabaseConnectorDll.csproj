@@ -62,11 +62,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Annotations\CustomDatabaseAnnotations.cs" />
-    <Compile Include="Annotations\CustomDatabaseAnnotationsHelper.cs" />
+    <Compile Include="CustomDatabase\CustomDatabaseAnnotations.cs" />
+    <Compile Include="CustomDatabase\CustomDatabaseAnnotationsHelper.cs" />
     <Compile Include="CacheClass.cs" />
     <Compile Include="Controller\DatabaseController.cs" />
     <Compile Include="CustomDatabaseAdapter.cs" />
+    <Compile Include="CustomDatabase\CustomDatabaseWhereParameter.cs" />
+    <Compile Include="CustomDatabase\CustomDatabaseWhereParameterHelper.cs" />
     <Compile Include="Database\MySqlDatabase.cs" />
     <Compile Include="Interface\IDatabase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

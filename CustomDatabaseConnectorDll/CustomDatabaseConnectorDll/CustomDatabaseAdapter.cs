@@ -1,4 +1,5 @@
 ﻿using CustomDatabaseConnectorDll.Controller;
+using CustomDatabaseConnectorDll.CustomDatabase;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -159,6 +160,15 @@ namespace CustomDatabaseConnectorDll
                 return null;
             }
             return DatabaseController.Instance.QueryData(objectType, out errorMessage);
+        }
+        public DataTable QueryData(Type objectType, List<CustomDatabaseWhereParameter> whereParameters, out string errorMessage)
+        {
+            if (DatabaseController.Instance == null)
+            {
+                errorMessage = "Geen database geïnitialiseerd";
+                return null;
+            }
+            return DatabaseController.Instance.QueryData(objectType, whereParameters, out errorMessage);
         }
 
 

@@ -1,11 +1,8 @@
-﻿using CustomDatabaseConnectorDll.Annotations;
+﻿using CustomDatabaseConnectorDll.CustomDatabase;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CustomDatabaseConnectorDll.Interface
 {
@@ -16,7 +13,7 @@ namespace CustomDatabaseConnectorDll.Interface
         string BuildDeleteObject(object obj, out string errorMessage);
         string BuildDropStatement(Type objectType, out string errorMessage);
         string BuildUpdateObject(object obj, out string errorMessage);
-        string ConvertNetValueToSqlValue(PropertyInfo pi, object obj, out string errorMessage);
+        string ConvertNetValueToSqlValue(PropertyInfo pi, object obj, bool isProperty, out string errorMessage);
         bool CreateObject(object obj, out int newRecordId, out string errorMessage);
         bool CreateObject(object obj, out string errorMessage);
         string CreateObjectScript(object obj, out string errorMessage);
@@ -35,5 +32,6 @@ namespace CustomDatabaseConnectorDll.Interface
         string GetSqlDataTypeByNetType(PropertyInfo pi, CustomDatabaseColumnAnnotation annotation, out string errorMessage);
         DataTable QueryData(Type objectType, out string errorMessage);
         bool UpdateObject(object obj, out string errorMessage);
+        DataTable QueryData(Type objectType, List<CustomDatabaseWhereParameter> whereParameters, out string errorMessage);
     }
 }

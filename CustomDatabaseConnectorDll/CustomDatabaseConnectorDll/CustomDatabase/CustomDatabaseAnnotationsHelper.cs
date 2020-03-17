@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CustomDatabaseConnectorDll.Annotations
+namespace CustomDatabaseConnectorDll.CustomDatabase
 {
     internal class CustomDatabaseAnnotationsHelper
     {

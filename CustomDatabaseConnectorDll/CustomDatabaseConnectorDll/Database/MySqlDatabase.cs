@@ -1,4 +1,4 @@
-﻿using CustomDatabaseConnectorDll.Annotations;
+﻿using CustomDatabaseConnectorDll.CustomDatabase;
 using CustomDatabaseConnectorDll.Interface;
 using MySql.Data.MySqlClient;
 using System;
@@ -95,8 +95,87 @@ namespace CustomDatabaseConnectorDll.Database
             string query = string.Format(queryFormat, tableName);
             return ExecuteSqlStatementToDataTable(query, out errorMessage);
         }
+        public DataTable QueryData(Type objectType, List<CustomDatabaseWhereParameter> whereParameters, out string errorMessage)
+        {
+            if (objectType == null)
+            {
+                errorMessage = string.Format("{0} ({1})", "Geen objecttype meegegeven", MethodBase.GetCurrentMethod().Name);
+                return null;
+            }
+            string tableName = CustomDatabaseAnnotationsHelper.GetTableName(objectType, out errorMessage);
+            if (string.IsNullOrEmpty(tableName))
+            {
+                return null;
+            }
+            string result = null;
+            string format = "SELECT * FROM {0}";
+            result = string.Format(format, tableName);
+            if(whereParameters != null && whereParameters.Count > 0)
+            {
+                format = "{0} WHERE {1}";
+                List<string> whereColumns = new List<string>();
+                bool loopCompleted = false;
+                for (int i = 0; i < whereParameters.Count; i++)
+                {
+                    CustomDatabaseWhereParameter parameter = whereParameters[i];
+                    string whereClause = ConvertWhereParameterToString(parameter, out errorMessage);
 
+                    if (!string.IsNullOrEmpty(whereClause))
+                    {
+                        whereColumns.Add(whereClause);
+                    }
+                    if (i == (whereParameters.Count - 1))
+                    {
+                        loopCompleted = true;
+                    }
+                }
+                if (loopCompleted)
+                {
+                    result = string.Format(format, result, string.Join(" AND ", whereColumns));
+                }
+            }
+            if(result == null)
+            {
+                return null;
+            }
+            return ExecuteSqlStatementToDataTable(result, out errorMessage);
+        }
         #endregion
+        public string ConvertWhereParameterToString(CustomDatabaseWhereParameter parameter, out string errorMessage)
+        {
+            if(parameter == null)
+            {
+                errorMessage = string.Format("{0} ({1})", "Geen where-parameter meegegeven", MethodBase.GetCurrentMethod().Name);
+                return null;
+            }
+            PropertyInfo pi = parameter.Property;
+            CustomDatabaseColumnAnnotation annotation = (CustomDatabaseColumnAnnotation)pi.GetCustomAttribute(typeof(CustomDatabaseColumnAnnotation));
+            if (annotation != null)
+            {
+                //Format: Columnname , operator, value
+                string columnName = annotation.ColumnName;
+                if (string.IsNullOrEmpty(columnName))
+                {
+                    errorMessage = string.Format("{0} ({1})", "Geen kolomnaam meegegeven", MethodBase.GetCurrentMethod().Name);
+                    return null;
+                }
+                string format = "{0} {1} {2}";
+                string operatorString = CustomDatabaseWhereParameterHelper.OperatorToString(parameter.Operator, out errorMessage);
+                if(string.IsNullOrEmpty(operatorString))
+                {
+                    return null;
+                }
+                string sqlValue = ConvertNetValueToSqlValue(pi, parameter.Value, true, out errorMessage);
+                if (string.IsNullOrEmpty(operatorString))
+                {
+                    return null;
+                }
+                return string.Format(format, columnName, operatorString, sqlValue);               
+            }
+            errorMessage = string.Format("{0} ({1})", "Eigenschap " + pi.Name + " bevat geen kolom-annotatie", MethodBase.GetCurrentMethod().Name);
+            return null;
+        }
+
         public string BuildUpdateObject(object obj, out string errorMessage)
         {
             if (obj == null)
@@ -128,7 +207,7 @@ namespace CustomDatabaseConnectorDll.Database
                     errorMessage = string.Format("Attribuut {0} bevat geen kolomnaam ({1})", pi.Name, MethodBase.GetCurrentMethod().Name);
                     break;
                 }
-                string sqlValue = ConvertNetValueToSqlValue(pi, obj, out errorMessage);
+                string sqlValue = ConvertNetValueToSqlValue(pi, obj, false, out errorMessage);
                 whereClauses.Add(string.Format(format, columnName, sqlValue));
             }
             if (whereClauses == null || whereClauses.Count == 0)
@@ -157,7 +236,7 @@ namespace CustomDatabaseConnectorDll.Database
                         errorMessage = string.Format("Attribuut {0} bevat geen kolomnaam ({1})", pi.Name, MethodBase.GetCurrentMethod().Name);
                         break;
                     }
-                    string dbValue = ConvertNetValueToSqlValue(pi, obj, out errorMessage);
+                    string dbValue = ConvertNetValueToSqlValue(pi, obj, false, out errorMessage);
                     setColumns.Add(string.Format(format, columnName, dbValue));
                 }
                 if (i == (columns.Count - 1))
@@ -207,7 +286,7 @@ namespace CustomDatabaseConnectorDll.Database
                         break;
                     }
                     columnNames.Add(columnName);
-                    string dbValue = ConvertNetValueToSqlValue(pi, obj, out errorMessage);
+                    string dbValue = ConvertNetValueToSqlValue(pi, obj, false, out errorMessage);
                     columnValues.Add(dbValue);
                 }
                 if (i == (columns.Count - 1))
@@ -573,14 +652,14 @@ namespace CustomDatabaseConnectorDll.Database
                     errorMessage = string.Format("Attribuut {0} bevat geen kolomnaam ({1})", pi.Name, MethodBase.GetCurrentMethod().Name);
                     break;
                 }
-                string sqlValue = ConvertNetValueToSqlValue(pi, obj, out errorMessage);
+                string sqlValue = ConvertNetValueToSqlValue(pi, obj, false, out errorMessage);
                 whereClauses.Add(string.Format(format, columnName, sqlValue));
             }
             string queryFormat = "DELETE FROM {0} WHERE {1}";
             errorMessage = null;
             return string.Format(queryFormat, tableName, string.Join(" AND ", whereClauses));
         }
-        public string ConvertNetValueToSqlValue(PropertyInfo pi, object obj, out string errorMessage)
+        public string ConvertNetValueToSqlValue(PropertyInfo pi, object obj, bool isProperty, out string errorMessage)
         {
             if (pi == null)
             {
@@ -592,7 +671,11 @@ namespace CustomDatabaseConnectorDll.Database
                 errorMessage = string.Format("{0} ({1})", "Geen object meegegeven", MethodBase.GetCurrentMethod().Name);
                 return null;
             }
-            object propertyValue = obj.GetType().GetProperty(pi.Name).GetValue(obj, null);
+            object propertyValue = obj;
+            if (!isProperty)
+            {
+                propertyValue = obj.GetType().GetProperty(pi.Name).GetValue(obj, null);
+            }
             errorMessage = null;
             if (pi.PropertyType == typeof(string))
             {
@@ -615,5 +698,7 @@ namespace CustomDatabaseConnectorDll.Database
                 return propertyValue.ToString();
             }
         }
+        
+
     }
 }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CustomDatabaseConnectorDll.Annotations
+namespace CustomDatabaseConnectorDll.CustomDatabase
 {
     public class CustomDatabaseClassAnnotation : Attribute
     {
