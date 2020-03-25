@@ -171,18 +171,14 @@ namespace CustomDatabaseConnectorDll
             return DatabaseController.Instance.QueryData(objectType, whereParameters, out errorMessage);
         }
 
-
-        //public DataTable SelectQuery(Type classType)
-        //{
-        //    return null;
-        //}
-        //public DataTable SelectQuery(Type classType, string whereFilter)
-        //{
-        //    return null;
-        //}
-        //public bool ExecuteSql(string sqlStatement)
-        //{
-        //    return false;
-        //}
+        public bool ExecuteSql(string sqlStatement, out string errorMessage)
+        {
+            if (DatabaseController.Instance == null)
+            {
+                errorMessage = "Geen database geïnitialiseerd";
+                return false;
+            }
+            return DatabaseController.Instance.ExecuteSqlStatement(sqlStatement, out errorMessage);
+        }
     }
 }
