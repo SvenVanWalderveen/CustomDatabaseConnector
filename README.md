@@ -49,6 +49,18 @@ public class TestTable
 }
 ```
 
+To configure an foreign key, see below:
+
+```
+[CustomDatabaseClassAnnotation(TableName = "TESTTABLE1")]
+public class TestTable1
+{
+	[CustomDatabaseColumnAnnotation(ColumnName = "ID", IsPrimaryKey = true, IsAutoIncrement = true)]
+	public int Id { get; set; }
+	[CustomDatabaseColumnAnnotation(ColumnName = "TEST_ID", ForeignKeyTable = typeof(TestTable))]
+	public int TestId { get; set; }
+}
+```
 ## Adapter methods
 
 
