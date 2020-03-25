@@ -16,13 +16,13 @@ Two types of annotations are available:
 * **CustomDatabaseClassAnnotation**: Annotation for a .NET class
 * **CustomDatabaseColumnAnnotation**: Annotation for a .NET property
 
-*CustomDatabaseClassAnnotation*
+### CustomDatabaseClassAnnotation
 This annotation class is used for determing the table name. 
 
 This annotation class has the following properties:
 * **TableName** (string): Tablename of database table.
 
-*CustomDatabaseColumnAnnotation*
+### CustomDatabaseColumnAnnotation
 This annotation class is used for setting properties of table columns.
 
 This annotation class has the following properties:
