@@ -9,28 +9,33 @@ namespace CustomDatabaseConnectorDll.CustomDatabase
 {
     internal class CustomDatabaseAnnotationsHelper
     {
-        internal static string GetTableName(Type objectType, out string errorMessage)
+        internal static string GetTableName(Type objectType, out CustomDatabaseErrorMessage errorMessage)
         {
-            if(objectType == null)
+            errorMessage = null;
+            if (objectType == null)
             {
-                errorMessage = string.Format("{0} ({1}_", "Geen objecttype meegegeven", MethodBase.GetCurrentMethod().Name);
+                errorMessage = new CustomDatabaseErrorMessage(objectType, ErrorMessages.NO_OBJECTTYPE_PASSED);
                 return null;
             }
             CustomDatabaseClassAnnotation classAttr = (CustomDatabaseClassAnnotation)objectType.GetCustomAttribute(typeof(CustomDatabaseClassAnnotation), true);
             if (classAttr == null)
             {
-                errorMessage = string.Format("{0} ({1}_", "Geen klasse-annotatie bekend", MethodBase.GetCurrentMethod().Name);
+                errorMessage = new CustomDatabaseErrorMessage(objectType, ErrorMessages.ANN_CLASS_NO_ANNOTATION);
                 return null;
             }
-            errorMessage = null;
+            if(string.IsNullOrEmpty(classAttr.TableName))
+            {
+                errorMessage = new CustomDatabaseErrorMessage(objectType, ErrorMessages.ANN_NO_CLASSNAME_INSERTED);
+                return null;
+            }
             return classAttr.TableName;
         }
 
-        internal static List<PropertyInfo> GetColumns(Type objectType, out string errorMessage)
+        internal static List<PropertyInfo> GetColumns(Type objectType, out CustomDatabaseErrorMessage errorMessage)
         {
             if(objectType == null)
             {
-                errorMessage = string.Format("{0} ({1}_", "Geen objecttype meegegeven", MethodBase.GetCurrentMethod().Name);
+                errorMessage = new CustomDatabaseErrorMessage(objectType, ErrorMessages.NO_OBJECTTYPE_PASSED);
                 return null;
             }
         
@@ -44,15 +49,20 @@ namespace CustomDatabaseConnectorDll.CustomDatabase
                     result.Add(pi);
                 }
             }
+            if(result.Count == 0)
+            {
+                errorMessage = new CustomDatabaseErrorMessage(objectType, ErrorMessages.ANN_CLASS_NO_COLUMNS);
+                return null;
+            }
             errorMessage = null;
             return result;
         }
 
-        internal static List<PropertyInfo> GetPrimaryKeyColumns(Type objectType, out string errorMessage)
+        internal static List<PropertyInfo> GetPrimaryKeyColumns(Type objectType, out CustomDatabaseErrorMessage errorMessage)
         {
             if (objectType == null)
             {
-                errorMessage = string.Format("{0} ({1}_", "Geen objecttype meegegeven", MethodBase.GetCurrentMethod().Name);
+                errorMessage = new CustomDatabaseErrorMessage(objectType, ErrorMessages.NO_OBJECTTYPE_PASSED);
                 return null;
             }
 
@@ -65,6 +75,11 @@ namespace CustomDatabaseConnectorDll.CustomDatabase
                 {
                     result.Add(pi);
                 }
+            }
+            if (result.Count == 0)
+            {
+                errorMessage = new CustomDatabaseErrorMessage(objectType, ErrorMessages.ANN_NO_PRIMARY_KEY);
+                return null;
             }
             errorMessage = null;
             return result;

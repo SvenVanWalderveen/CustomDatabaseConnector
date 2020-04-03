@@ -26,6 +26,8 @@ namespace CustomDatabaseConnectorDll.CustomDatabase
         private bool isNullable;
         private int maxLength;
         private bool updatable;
+        private bool isUnique;
+        private int uniqueConstraintNumber;
         public virtual bool IsAutoIncrement
         {
             get { return isAutoIncrement; }
@@ -61,6 +63,16 @@ namespace CustomDatabaseConnectorDll.CustomDatabase
         {
             get { return maxLength; }
             set { maxLength = value; }
+        }
+        public virtual bool IsUnique
+        {
+            get { return isUnique; }
+            set { isUnique = value; }
+        }
+        public virtual int UniqueConstraintNumber
+        {
+            get { return uniqueConstraintNumber; }
+            set { uniqueConstraintNumber = value; }
         }
     }
 }

@@ -9,7 +9,7 @@ namespace CustomDatabaseConnectorDll.CustomDatabase
 {
     internal class CustomDatabaseWhereParameterHelper
     {
-        internal static string OperatorToString(CustomDatabaseOperator operatorEnum, out string errorMessage)
+        internal static string OperatorToString(CustomDatabaseOperator operatorEnum, out CustomDatabaseErrorMessage errorMessage)
         {
             errorMessage = null;
             if(operatorEnum == CustomDatabaseOperator.EQUALS)
@@ -36,7 +36,7 @@ namespace CustomDatabaseConnectorDll.CustomDatabase
             {
                 return "<>";
             }
-            errorMessage = string.Format("{0} ({1})", "Operator " + operatorEnum.ToString() + " bestaat niet", MethodBase.GetCurrentMethod().Name);
+            errorMessage = new CustomDatabaseErrorMessage(string.Format("Operator {0} is not defined", operatorEnum.ToString()));
             return null;
         }
     }
