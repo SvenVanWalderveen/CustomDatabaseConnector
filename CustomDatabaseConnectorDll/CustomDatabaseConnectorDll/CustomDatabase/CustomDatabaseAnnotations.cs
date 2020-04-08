@@ -28,6 +28,12 @@ namespace CustomDatabaseConnectorDll.CustomDatabase
         private bool updatable;
         private bool isUnique;
         private int uniqueConstraintNumber;
+        private string datetimeAutoFillMode;
+        public virtual string DateTimeAutoFillMode
+        {
+            get { return datetimeAutoFillMode; }
+            set { datetimeAutoFillMode = value; }
+        }
         public virtual bool IsAutoIncrement
         {
             get { return isAutoIncrement; }

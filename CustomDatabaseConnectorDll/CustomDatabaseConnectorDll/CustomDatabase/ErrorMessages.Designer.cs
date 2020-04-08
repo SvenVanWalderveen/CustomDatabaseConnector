@@ -178,6 +178,15 @@ namespace CustomDatabaseConnectorDll.CustomDatabase {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Primary key is empty.
+        /// </summary>
+        internal static string SQL_EMPTY_PKEY {
+            get {
+                return ResourceManager.GetString("SQL_EMPTY_PKEY", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to SQL-Statement is empty..
         /// </summary>
         internal static string SQL_EMPTY_STATEMENT {

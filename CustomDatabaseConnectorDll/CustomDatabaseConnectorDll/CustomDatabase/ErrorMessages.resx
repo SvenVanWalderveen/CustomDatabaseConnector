@@ -156,6 +156,9 @@
   <data name="NO_OBJECT_PASSED" xml:space="preserve">
     <value>No object is passed to method</value>
   </data>
+  <data name="SQL_EMPTY_PKEY" xml:space="preserve">
+    <value>Primary key is empty</value>
+  </data>
   <data name="SQL_EMPTY_STATEMENT" xml:space="preserve">
     <value>SQL-Statement is empty.</value>
   </data>

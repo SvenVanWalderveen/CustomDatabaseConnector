@@ -180,7 +180,7 @@ namespace CustomDatabaseConnectorDll.Database
                         break;
                     }
                     columnNames.Add(columnName);
-                    string dbValue = ConvertNetValueToSqlValue(pi, obj, false, out errorMessage);
+                    string dbValue = ConvertNetValueToSqlValue(pi, obj, false, out errorMessage, "C");
                     columnValues.Add(dbValue);
                 }
                 if (i == (columns.Count - 1))
@@ -295,7 +295,7 @@ namespace CustomDatabaseConnectorDll.Database
                     errorMessage = new CustomDatabaseErrorMessage(pi, ErrorMessages.ANN_NO_COLUMNNAME_INSERTED);
                     break;
                 }
-                string sqlValue = ConvertNetValueToSqlValue(pi, obj, false, out errorMessage);
+                string sqlValue = ConvertNetValueToSqlValue(pi, obj, false, out errorMessage, "D");
                 whereClauses.Add(string.Format(format, columnName, sqlValue));
             }
             string queryFormat = "DELETE FROM {0} WHERE {1}";
@@ -348,7 +348,12 @@ namespace CustomDatabaseConnectorDll.Database
                     errorMessage = new CustomDatabaseErrorMessage(pi, ErrorMessages.ANN_COLUMN_NO_ANNOTATION);
                     break;
                 }
-                string sqlValue = ConvertNetValueToSqlValue(pi, obj, false, out errorMessage);
+                string sqlValue = ConvertNetValueToSqlValue(pi, obj, false, out errorMessage, "U");
+                if (sqlValue.Equals("0"))
+                {
+                    errorMessage = new CustomDatabaseErrorMessage(pi, ErrorMessages.SQL_EMPTY_PKEY);
+                    return null;
+                }
                 whereClauses.Add(string.Format(format, columnName, sqlValue));
             }
             if (whereClauses == null || whereClauses.Count == 0)
@@ -368,7 +373,7 @@ namespace CustomDatabaseConnectorDll.Database
                 string format = "{0} = {1}";
                 PropertyInfo pi = columns[i];
                 CustomDatabaseColumnAnnotation annotation = (CustomDatabaseColumnAnnotation)pi.GetCustomAttribute(typeof(CustomDatabaseColumnAnnotation));
-                if (!annotation.IsPrimaryKey)
+                if (!annotation.IsPrimaryKey && (annotation.IsUpdatable || !string.IsNullOrEmpty(annotation.DateTimeAutoFillMode)))
                 {
                     //Auto-increment values can be skipped.
                     string columnName = annotation.ColumnName;
@@ -377,7 +382,7 @@ namespace CustomDatabaseConnectorDll.Database
                         errorMessage = new CustomDatabaseErrorMessage(ErrorMessages.ANN_COLUMN_NO_ANNOTATION);
                         break;
                     }
-                    string dbValue = ConvertNetValueToSqlValue(pi, obj, false, out errorMessage);
+                    string dbValue = ConvertNetValueToSqlValue(pi, obj, false, out errorMessage, "U");
                     setColumns.Add(string.Format(format, columnName, dbValue));
                 }
                 if (i == (columns.Count - 1))
@@ -651,8 +656,9 @@ namespace CustomDatabaseConnectorDll.Database
         {
             return CacheClass.ConnectionString;
         }
-        public string ConvertNetValueToSqlValue(PropertyInfo pi, object obj, bool isProperty, out CustomDatabaseErrorMessage errorMessage)
+        public string ConvertNetValueToSqlValue(PropertyInfo pi, object obj, bool isProperty, out CustomDatabaseErrorMessage errorMessage, string transactionMode)
         {
+            CustomDatabaseColumnAnnotation annotation = (CustomDatabaseColumnAnnotation)pi.GetCustomAttribute(typeof(CustomDatabaseColumnAnnotation));
             if (pi == null)
             {
                 errorMessage = new CustomDatabaseErrorMessage(ErrorMessages.NO_DOTNET_PROPERTY_PASSED);
@@ -682,7 +688,13 @@ namespace CustomDatabaseConnectorDll.Database
             }
             else if (pi.PropertyType == typeof(DateTime))
             {
-
+                if(annotation != null && !string.IsNullOrEmpty(annotation.DateTimeAutoFillMode))
+                {
+                    if(annotation.DateTimeAutoFillMode.Contains(transactionMode))
+                    {
+                        return string.Format("'{0}'", DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
+                    }
+                }
                 return string.Format("'{0}'", DateTime.Parse(propertyValue.ToString()).ToString("yyyy-MM-dd HH:mm:ss"));
             }
             else
@@ -714,7 +726,7 @@ namespace CustomDatabaseConnectorDll.Database
                 {
                     return null;
                 }
-                string sqlValue = ConvertNetValueToSqlValue(pi, parameter.Value, true, out errorMessage);
+                string sqlValue = ConvertNetValueToSqlValue(pi, parameter.Value, true, out errorMessage, "R");
                 if (string.IsNullOrEmpty(operatorString))
                 {
                     return null;
